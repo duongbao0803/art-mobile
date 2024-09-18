@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   FlatList,
@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   ToastAndroid,
 } from "react-native";
-import axios from "axios";
 import { router, useFocusEffect } from "expo-router";
 import { Picker } from "react-native-ui-lib";
 import { ArrowDown2, FilterSearch } from "iconsax-react-native";
@@ -16,33 +15,21 @@ import { IconButton } from "react-native-paper";
 import { Art } from "@/types/art.types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NotFound from "@/assets/images/logo/—Pngtree—not found_5408094.png";
+import useFetch from "@/hooks/useFetch";
+import { API_URLS } from "@/constants/url";
 
 const HomeScreen = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [art, setArt] = useState<Art[]>([]);
   const [favorites, setFavorites] = useState<Art[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string | null>("");
+  const { data: art, isLoading } = useFetch<Art[]>(API_URLS.ART);
 
-  const filterArt = art.filter((item) =>
-    selectedBrand ? item.brand === selectedBrand : true,
+  const filterArt = useMemo(
+    () =>
+      (selectedBrand
+        ? art?.filter((item) => item.brand === selectedBrand)
+        : art) || [],
+    [art, selectedBrand],
   );
-
-  useLayoutEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const res = await axios.get(
-          "https://66e12e90c831c8811b53ff13.mockapi.io/api/v1/art",
-        );
-        setArt(res.data);
-        setIsLoading(false);
-      } catch (err) {
-        setIsLoading(false);
-        console.error("Error fetching data", err);
-      }
-    }
-    fetchData();
-  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -54,16 +41,23 @@ const HomeScreen = () => {
     }, []),
   );
 
-  const toggleFavorite = async (art: Art) => {
-    if (favorites.some((item) => item.id === art.id)) {
-      ToastAndroid.show("Already in favorite list", ToastAndroid.SHORT);
-    } else {
-      const updatedFavorites = [...favorites, art];
-      ToastAndroid.show("Added to favorite list", ToastAndroid.SHORT);
-      setFavorites(updatedFavorites);
-      await AsyncStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-    }
-  };
+  const toggleFavorite = useCallback(
+    async (art: Art) => {
+      const alreadyFavorite = favorites.some((item) => item.id === art.id);
+      if (alreadyFavorite) {
+        ToastAndroid.show("Already in favorite list", ToastAndroid.SHORT);
+      } else {
+        const updatedFavorites = [...favorites, art];
+        setFavorites(updatedFavorites);
+        await AsyncStorage.setItem(
+          "favorites",
+          JSON.stringify(updatedFavorites),
+        );
+        ToastAndroid.show("Added to favorite list", ToastAndroid.SHORT);
+      }
+    },
+    [favorites],
+  );
 
   const Item = ({ item }: { item: Art }) => (
     <TouchableOpacity
@@ -124,8 +118,8 @@ const HomeScreen = () => {
     <View className="flex-1 px-1">
       <View className="m-2">
         <View className="flex-row items-center justify-end">
-          <View className="flex-row items-center justify-between rounded-md bg-white text-center">
-            <FilterSearch size="15" color="black" className="ml-1" />
+          <View className="flex-row items-center justify-between rounded-md border bg-white px-1 text-center">
+            <FilterSearch size="15" color="black" />
             <Picker
               value={selectedBrand ?? ""}
               onChange={(brand) => {
@@ -138,25 +132,25 @@ const HomeScreen = () => {
               placeholder="Filter by brand"
               topBarProps={{ title: "Select Brand" }}
               enableModalBlur={false}
-              className="border-0 text-center text-[10px]"
+              className="mx-1 border-0 text-center"
             >
               <Picker.Item
                 label="All brands"
                 value=""
-                selectedIconColor="green"
+                selectedIconColor="orange"
               />
-              {Array.from(new Set(art.map((item) => item?.brand))).map(
+              {Array.from(new Set(art?.map((item) => item?.brand))).map(
                 (brand) => (
                   <Picker.Item
                     key={brand}
                     label={brand}
                     value={brand}
-                    selectedIconColor="green"
+                    selectedIconColor="orange"
                   />
                 ),
               )}
             </Picker>
-            <ArrowDown2 size="15" color="#FF8A65" className="mr-2" />
+            <ArrowDown2 size="15" color="black" />
           </View>
         </View>
       </View>

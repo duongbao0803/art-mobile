@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,44 +7,51 @@ import {
   ToastAndroid,
   ScrollView,
   SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
 import { Rating } from "react-native-elements";
 import { useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { IconButton, Modal, Portal } from "react-native-paper";
 import { ButtonComponent } from "@/components/custom";
-import { IconButton, Modal, Portal, Provider } from "react-native-paper";
+import { ItemParams } from "@/types/art.types";
 import NotFound from "@/assets/images/icon/logo_not_found.png";
 import Avatar from "@/assets/images/icon/avatar.jpg";
+import { FontAwesome } from "@expo/vector-icons";
 
 const DetailScreen = () => {
+  const route = useRoute();
   const [comments, setComments] = useState<{ text: string; rating: number }[]>(
     [],
   );
+  const [filterComments, setFilterComments] = useState<
+    { text: string; rating: number }[]
+  >([]);
   const [newComment, setNewComment] = useState("");
   const [rating, setRating] = useState(0);
+  const [filterRating, setFilterRating] = useState<number | null>(null);
   const [visible, setVisible] = useState(false);
-
-  const route = useRoute();
-  const { item } = route.params;
+  const { item } = route.params as ItemParams;
   const artItem = item ? JSON.parse(item) : null;
   const STORE_COMMENT = `comments-${artItem?.id}`;
 
   useEffect(() => {
-    const loadComments = async () => {
+    const fetchComments = async () => {
       try {
         const storedComments = await AsyncStorage.getItem(STORE_COMMENT);
         if (storedComments) {
-          setComments(JSON.parse(storedComments));
+          const parsedComments = JSON.parse(storedComments);
+          setComments(parsedComments);
+          setFilterComments(parsedComments);
         }
       } catch (error) {
         console.error("Error loading comments", error);
       }
     };
-
-    loadComments();
+    fetchComments();
   }, [STORE_COMMENT]);
 
-  const handleAddComment = async () => {
+  const handleAddComment = useCallback(async () => {
     if (newComment.trim() && rating > 0) {
       const updatedComments = [
         ...comments,
@@ -56,10 +63,11 @@ const DetailScreen = () => {
           JSON.stringify(updatedComments),
         );
         setComments(updatedComments);
+        setFilterComments(updatedComments);
         setNewComment("");
         setRating(0);
         setVisible(false);
-        ToastAndroid.show("Error saving comment", ToastAndroid.SHORT);
+        ToastAndroid.show("Comment added successfully", ToastAndroid.SHORT);
       } catch (error) {
         console.error("Error saving comment", error);
         ToastAndroid.show("Error saving comment", ToastAndroid.SHORT);
@@ -70,141 +78,194 @@ const DetailScreen = () => {
         ToastAndroid.SHORT,
       );
     }
-  };
+  }, [rating, comments, newComment, STORE_COMMENT]);
+
+  const filterCommentsByRating = useCallback(
+    (selectedRating: number | null) => {
+      if (selectedRating === null) {
+        setFilterComments(comments);
+      } else {
+        const filtered = comments.filter(
+          (comment) => comment.rating === selectedRating,
+        );
+        setFilterComments(filtered);
+      }
+      setFilterRating(selectedRating);
+    },
+    [comments],
+  );
 
   return (
-    <Provider>
-      <SafeAreaView className="flex-1 bg-white">
-        <ScrollView className="flex-1">
-          <Image
-            source={{ uri: artItem?.image }}
-            className="mb-5 mt-10 h-96 w-full"
-            resizeMode="contain"
-          />
-
-          <View className="flex-1 rounded-t-[30px] border-[0.5px]">
-            <View className="p-5">
-              <Text className="my-2 text-2xl font-bold">
-                {artItem?.artName}
+    <SafeAreaView className="flex-1 bg-white">
+      <ScrollView className="flex-1">
+        <Image
+          source={{ uri: artItem?.image }}
+          className="mx-auto my-5 h-96 w-[90%]"
+          resizeMode="contain"
+        />
+        <View className="flex-1 rounded-t-[30px] border-[0.5px]">
+          <View className="p-5">
+            <Text className="my-2 text-2xl font-bold">{artItem?.artName}</Text>
+            <Text className="mb-2 text-sm font-medium text-gray-500">
+              Brand: {artItem?.brand}
+            </Text>
+            <Text className="mb-2 text-sm text-gray-300">
+              {artItem?.description}
+            </Text>
+            <View className="mb-2 flex-row items-center">
+              <Text className="mr-2 text-2xl font-bold text-red-500">
+                ${artItem?.price.toFixed(2)}
               </Text>
-
-              <Text className="mb-2 text-sm font-medium text-gray-500">
-                Brand: {artItem?.brand}
+              <Text className="text-lg text-gray-500 line-through">
+                $
+                {(
+                  artItem?.price +
+                  artItem?.price * artItem?.limitedTimeDeal
+                ).toFixed(2)}
               </Text>
-
-              <Text className="mb-2 text-sm text-gray-300">
-                Description: {artItem?.description}
-              </Text>
-
-              <View className="mb-2 flex-row items-center">
-                <Text className="mr-2 text-2xl font-bold text-red-500">
-                  ${artItem?.price.toFixed(2)}
+            </View>
+            {artItem?.limitedTimeDeal > 0 && (
+              <View className="mb-4 rounded-lg border border-red-500 bg-red-100 p-3">
+                <Text className="text-center text-lg font-bold text-red-700">
+                  {artItem?.limitedTimeDeal * 100}% Off!
                 </Text>
-                <Text className="text-lg text-gray-500 line-through">
-                  $
-                  {(
-                    artItem?.price +
-                    artItem?.price * artItem?.limitedTimeDeal
-                  ).toFixed(2)}
+                <Text className="text-center text-sm text-red-500">
+                  Limited Time Deal - Hurry Up!
                 </Text>
               </View>
-
-              {/* Emphasized Limited Time Deal */}
-              {artItem?.limitedTimeDeal > 0 && (
-                <View className="mb-4 rounded-lg border border-red-500 bg-red-100 p-3">
-                  <Text className="text-center text-lg font-bold text-red-700">
-                    {artItem?.limitedTimeDeal * 100}% Off!
-                  </Text>
-                  <Text className="text-center text-sm text-red-500">
-                    Limited Time Deal - Hurry Up!
+            )}
+            <ButtonComponent
+              onPress={() => setVisible(true)}
+              text="Add Comment"
+              textStyle="text-red-500 font-medium text-center text-white"
+              buttonStyle="bg-orange-300 p-3 rounded-md"
+            />
+            <View className="mt-4 flex-1">
+              <View className="mb-4 flex-1">
+                <View className="flex-col overflow-x-auto">
+                  <Text className="mb-2` text-lg font-bold">Comments:</Text>
+                  <View className="flex-row items-center space-x-2">
+                    <TouchableOpacity
+                      onPress={() => filterCommentsByRating(null)}
+                      className={`mt-2 rounded-xl border-[0.5px] px-3 py-1 ${
+                        filterRating === null
+                          ? "border-transparent bg-orange-400"
+                          : "bg-transparent"
+                      }`}
+                    >
+                      <Text
+                        className={`text-sm font-bold text-gray-700 ${
+                          filterRating === null ? "text-white" : "text-gray-700"
+                        }`}
+                      >
+                        All
+                      </Text>
+                    </TouchableOpacity>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <TouchableOpacity
+                        key={star}
+                        onPress={() => filterCommentsByRating(star)}
+                        className={`mt-2 rounded-xl border-[0.5px] px-3 py-1 ${
+                          filterRating === star
+                            ? "border-transparent bg-orange-400"
+                            : "bg-transparent"
+                        }`}
+                      >
+                        <View className="flex-row-reverse items-center gap-x-1">
+                          <FontAwesome
+                            name="star"
+                            size={10}
+                            color={"#ffbf00"}
+                          />
+                          <Text
+                            className={`text-sm font-bold text-gray-700 ${
+                              filterRating === star
+                                ? "text-white"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {star}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
+              {filterComments.length === 0 ? (
+                <View className="my-4 flex-1 items-center justify-center">
+                  <Image
+                    source={NotFound}
+                    className="h-32 w-full object-cover"
+                    resizeMode="contain"
+                  />
+                  <Text className="font-normal tracking-widest text-gray-400">
+                    No comments found
                   </Text>
                 </View>
-              )}
-
-              <ButtonComponent
-                onPress={() => setVisible(true)}
-                text="Add Comment"
-                textStyle="text-red-500 font-medium text-center text-white"
-                buttonStyle="bg-orange-300 p-3 rounded-md"
-              />
-
-              <View className="mt-4 flex-1">
-                <Text className="text-lg font-bold">Comments:</Text>
-                {comments.length === 0 ? (
-                  <View className="my-4 flex-1 items-center justify-center">
-                    <Image
-                      source={NotFound}
-                      className="h-32 w-full object-cover"
-                    />
-                    <Text className="font-normal tracking-widest text-gray-400">
-                      No results found
-                    </Text>
-                  </View>
-                ) : (
-                  <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-                    {comments.map((item, index) => (
-                      <View
-                        key={index}
-                        className="mb-4 flex-row items-center gap-3 border-b border-gray-100"
-                      >
-                        <Image
-                          source={Avatar}
-                          className="h-12 w-12 rounded-full"
-                          resizeMode="cover"
-                        />
-                        <View className="flex-1 py-5">
-                          <Text className="mb-1">{item?.text}</Text>
-                          <View className="flex-row items-center">
-                            <Rating
-                              imageSize={15}
-                              readonly
-                              startingValue={item?.rating}
-                            />
-                          </View>
+              ) : (
+                <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+                  {filterComments.map((item, index: number) => (
+                    <View
+                      key={index}
+                      className="mb-4 flex-row items-center gap-3 border-b border-gray-100"
+                    >
+                      <Image
+                        source={Avatar}
+                        className="h-12 w-12 rounded-full"
+                        resizeMode="cover"
+                      />
+                      <View className="flex-1 py-5">
+                        <Text className="mb-1">{item?.text}</Text>
+                        <View className="flex-row items-center">
+                          <Rating
+                            imageSize={15}
+                            readonly
+                            startingValue={item?.rating}
+                          />
                         </View>
                       </View>
-                    ))}
-                  </ScrollView>
-                )}
-              </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
             </View>
           </View>
-        </ScrollView>
-
-        <Portal>
-          <Modal visible={visible} onDismiss={() => setVisible(false)}>
-            <View className="relative mx-5 rounded-lg bg-white p-6">
-              <IconButton
-                icon="close"
-                size={24}
-                onPress={() => setVisible(false)}
-                className="absolute right-0"
-              />
-              <Text className="mb-4 text-lg font-bold">Add a comment</Text>
-              <Rating
-                ratingCount={5}
-                imageSize={30}
-                startingValue={rating}
-                onFinishRating={setRating}
-              />
-              <TextInput
-                className="my-4 h-10 rounded-md border border-gray-400 px-2"
-                placeholder="Add a comment..."
-                value={newComment}
-                onChangeText={setNewComment}
-                multiline
-              />
-              <ButtonComponent
-                onPress={handleAddComment}
-                text="Submit"
-                textStyle="text-white font-medium text-center"
-                buttonStyle="bg-orange-300 p-3 rounded-md"
-              />
-            </View>
-          </Modal>
-        </Portal>
-      </SafeAreaView>
-    </Provider>
+        </View>
+      </ScrollView>
+      <Portal>
+        <Modal visible={visible} onDismiss={() => setVisible(false)}>
+          <View className="relative mx-5 rounded-lg bg-white p-6">
+            <IconButton
+              icon="close"
+              size={24}
+              onPress={() => setVisible(false)}
+              className="absolute right-0"
+            />
+            <Text className="mb-4 text-lg font-bold">Add a comment</Text>
+            <Rating
+              ratingCount={5}
+              imageSize={30}
+              startingValue={rating}
+              onFinishRating={setRating}
+            />
+            <TextInput
+              className="my-4 h-10 rounded-md border border-gray-400 px-2"
+              placeholder="Add a comment..."
+              value={newComment}
+              onChangeText={setNewComment}
+              multiline
+            />
+            <ButtonComponent
+              onPress={handleAddComment}
+              text="Submit"
+              textStyle="text-white font-medium text-center"
+              buttonStyle="bg-orange-300 p-3 rounded-md"
+            />
+          </View>
+        </Modal>
+      </Portal>
+    </SafeAreaView>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
-
 import { router } from "expo-router";
 import { SplashScreen } from "@/components/custom";
 

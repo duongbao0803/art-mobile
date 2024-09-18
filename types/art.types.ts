@@ -8,3 +8,7 @@ export interface Art {
   brand: string;
   limitedTimeDeal: number;
 }
+
+export interface ItemParams {
+  item: string;
+}
