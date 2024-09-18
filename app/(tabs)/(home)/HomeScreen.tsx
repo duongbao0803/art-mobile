@@ -21,7 +21,7 @@ import { API_URLS } from "@/constants/url";
 const HomeScreen = () => {
   const [favorites, setFavorites] = useState<Art[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string | null>("");
-  const { data: art, isLoading } = useFetch<Art[]>(API_URLS.ART);
+  const { data: art, isLoading, error } = useFetch<Art[]>(API_URLS.ART);
 
   const filterArt = useMemo(
     () =>
@@ -97,6 +97,7 @@ const HomeScreen = () => {
                 ? "heart"
                 : "heart-outline"
             }
+            animated
             size={20}
             onPress={() => toggleFavorite(item)}
             iconColor={"red"}
