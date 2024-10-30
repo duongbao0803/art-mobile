@@ -1,0 +1,47 @@
+[
+  {
+    "create-date": "2024-10-19T00:02:08.1570326",
+    "default-price": 15,
+    "full-description": "Bánh mì",
+    "id": 2,
+    "img-url": "https://firebasestorage.googleapis.com/v0/b/swd392-d2c4e.appspot.com/o/FTravel%2Fbanhmi.jpg?alt=media&token=33a159d3-9f4e-42ec-9df9-446cdb7586d3",
+    "is-deleted": false,
+    "name": "Bánh mì",
+    "route-id": 1,
+    "route-name": "Hồ Chí Minh - Vũng Tàu",
+    "short-description": "Bánh mì",
+    "station-id": 3,
+    "station-name": "Bò sữa Long Thành",
+    "update-date": null
+  },
+  {
+    "create-date": "2024-10-19T00:01:19.7520336",
+    "default-price": 8,
+    "full-description": "Nước suối",
+    "id": 1,
+    "img-url": "https://firebasestorage.googleapis.com/v0/b/swd392-d2c4e.appspot.com/o/FTravel%2Faquafina-500ml.jpg?alt=media&token=2c1f05cc-605c-4d9c-9b7c-dde43e0f0761",
+    "is-deleted": false,
+    "name": "Nước suối",
+    "route-id": 1,
+    "route-name": "Hồ Chí Minh - Vũng Tàu",
+    "short-description": "Nước suối",
+    "station-id": 1,
+    "station-name": "Bến xe Bến Thành",
+    "update-date": null
+  },
+  {
+    "create-date": "2024-10-19T00:03:03.7243046",
+    "default-price": 30,
+    "full-description": "Hủ tiếu",
+    "id": 3,
+    "img-url": "https://firebasestorage.googleapis.com/v0/b/swd392-d2c4e.appspot.com/o/FTravel%2Fhu-tieu.jpg?alt=media&token=b0227226-d283-4fb7-b7a8-ff8ea37ee9d4",
+    "is-deleted": false,
+    "name": "Hủ tiếu",
+    "route-id": 1,
+    "route-name": "Hồ Chí Minh - Vũng Tàu",
+    "short-description": "Hủ tiếu",
+    "station-id": 3,
+    "station-name": "Bò sữa Long Thành",
+    "update-date": null
+  }
+]

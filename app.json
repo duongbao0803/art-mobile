@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "asm-mma",
-    "slug": "asm-mma",
+    "name": "ftravel",
+    "slug": "ftravel",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo/logo_fpt.png",
+    "icon": "./assets/images/logo/logo_ftravel.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/logo/logo_fpt.png",
+      "image": "./assets/images/logo/logo_ftravel.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,19 +16,32 @@
       "supportsTablet": true
     },
     "android": {
+      "useNextNotificationsApi": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo/logo_fpt.png",
+        "foregroundImage": "./assets/images/logo/logo_ftravel.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.duongbao2k3.asmmma"
+      "package": "com.ftravel",
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "manifest": {
+          "meta-data": {
+            "com.google.firebase.messaging.default_notification_color": null,
+            "com.google.firebase.messaging.default_notification_icon": null
+          }
+        }
+      }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo/logo_fpt.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@react-native-google-signin/google-signin",
+      "@react-native-firebase/app",
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true
@@ -38,7 +51,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "65ce31f6-22a1-4cde-a4f2-0c61f56cd3dd"
+        "projectId": "b3b17e74-77df-42db-87b1-d26341d45071"
       }
     }
   }

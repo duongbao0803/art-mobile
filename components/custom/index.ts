@@ -1,5 +1,9 @@
-export { default as SpaceComponent } from "./SpaceComponent";
-export { default as ButtonComponent } from "./ButtonComponent";
-export { default as SectionComponent } from "./SectionComponent";
-export { default as ImageBackgroundComponent } from "./ImageBackgroundComponent";
-export { default as SplashScreen } from "./SplashScreen";
+export {default as SpaceComponent} from './SpaceComponent';
+export {default as InputComponent} from './InputComponent';
+export {default as ButtonComponent} from './ButtonComponent';
+export {default as SectionComponent} from './SectionComponent';
+export {default as ImageBackgroundComponent} from './ImageBackgroundComponent';
+export {default as SwitchComponent} from './SwitchComponent';
+export {default as LoadingScreen} from './LoadingScreen';
+export {default as CarouselComponent} from './CarouselComponent';
+export {default as SplashScreen} from './SplashScreen';
